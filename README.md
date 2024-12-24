@@ -10,11 +10,13 @@ Supports a wide range of file types and sources, making downloads effortless and
 Just forward or sent a message into the bot and it will download and save it for you.
 
 # Features
-1. Get download workspace tree of files
-2. Archive Downloaded files into compressed zip file
-3. See archived files tree
-4. Clear the downloaded files from all folders
-5. Ping bot
+1. Parallel Downloading
+2. Get download workspace tree of files
+3. Archive Downloaded files into compressed zip file
+4. See archived files tree
+5. Clear the downloaded files from all folders
+6. Parallel Download
+7. Ping bot
 
 # Supported types
 - Document

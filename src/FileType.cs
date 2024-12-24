@@ -1,4 +1,4 @@
-﻿namespace DownloaderBot;
+﻿namespace LocalDownloaderBot;
 
 public enum FileType
 {
