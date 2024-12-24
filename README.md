@@ -9,6 +9,12 @@ Supports a wide range of file types and sources, making downloads effortless and
 
 Just forward or sent a message into the bot and it will download and save it for you.
 
+# How to use
+Simply replace the `BOT-API-KEY` in BotService file with your api token from botfather
+```csharp
+private const string BotToken = "BOT-API-KEY";
+```
+
 # Features
 1. Parallel Downloading
 2. Get download workspace tree of files
