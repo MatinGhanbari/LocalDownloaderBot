@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.IO.Compression;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.IO.Compression;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace DownloaderBot;
+namespace LocalDownloaderBot;
 
 internal class BotService(ILogger<BotService> logger) : BackgroundService
 {
-    private const string BotToken = "7686441305:AAEhMInfi2l12YkiIuPETVX2hlOSLTViTiU";
+    private const string BotToken = "BOT-API-KEY";
     private static readonly string BaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "DownloadedFiles");
     private static readonly string ArchivesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Archives");
     private TelegramBotClient? _botClient;

@@ -2,7 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace DownloaderBot;
+namespace LocalDownloaderBot;
 
 internal static class Utils
 {
