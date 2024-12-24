@@ -20,7 +20,7 @@ Just forward or sent a message into the bot and it will download and save it for
 
 # Screenshots
 Musics | Photos
-![](https://github.com/MatinGhanbari/LocalDownloaderBot/blob/main/assets/images/image-1.png) | ![](https://github.com/MatinGhanbari/LocalDownloaderBot/blob/main/assets/images/image-2.png)
+![](https://raw.githubusercontent.com/MatinGhanbari/LocalDownloaderBot/refs/heads/main/assets/images/image-1.png) | ![](https://raw.githubusercontent.com/MatinGhanbari/LocalDownloaderBot/refs/heads/main/assets/images/image-2.png)
 --- | ---
 
 # Contributing
