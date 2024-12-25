@@ -138,7 +138,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task SendHere(ChatId fromId, ReplyParameters? messageId)
     {
-        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: "😒 I'm here.");
+        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: "I'm here.");
     }
 
     private async Task SendPing(ChatId fromId, ReplyParameters? messageId)
