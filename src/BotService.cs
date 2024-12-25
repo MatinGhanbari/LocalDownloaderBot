@@ -1,6 +1,6 @@
-﻿using System.IO.Compression;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.IO.Compression;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -172,7 +172,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
         var fileName = (string?)file.GetType().GetProperty("FileName")?.GetValue(file)!;
 
         var fileInfo = await _botClient!.GetInfoAndDownloadFile(file.FileId, Stream.Null);
-        var filePath = Path.Combine(BaseDirectory, fileInfo.FilePath ?? $"{fileType:G}/{documentFileName ?? file.FileId}");
+        var filePath = Path.Combine(BaseDirectory, fileInfo.FilePath.ToWindowsSupportedFileName() ?? $"{fileType:G}/{documentFileName ?? file.FileId}");
 
         if (!string.IsNullOrEmpty(fileName?.Trim()))
             filePath = filePath.Replace(filePath.Split("/")[^1], fileName);
