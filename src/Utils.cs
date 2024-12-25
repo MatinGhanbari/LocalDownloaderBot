@@ -43,13 +43,13 @@ internal static class Utils
         string[] subdirectories = Directory.GetDirectories(rootPath);
         foreach (string subdirectory in subdirectories)
         {
-            treeBuilder.Append(GetDirectoryTree(subdirectory, indent + "  ")); // Increase indentation for subdirectories
+            treeBuilder.Append(GetDirectoryTree(subdirectory, indent + "\t"));
         }
 
-        string[] files = Directory.GetFiles(rootPath);
-        foreach (string file in files)
+        var files = Directory.GetFiles(rootPath);
+        foreach (var file in files)
         {
-            treeBuilder.AppendLine($"{indent}  - {Path.GetFileName(file)}"); // Indent files
+            treeBuilder.AppendLine($"{indent}  - {Path.GetFileName(file)}");
         }
 
         return treeBuilder.ToString();
@@ -84,5 +84,18 @@ internal static class Utils
             result.Append(Array.Exists(InvalidChars, invalidChar => invalidChar == c) ? '_' : c);
 
         return result.ToString();
+    }
+
+    internal static List<string> SplitMessage(string text, int maxLength)
+    {
+        var messages = new List<string>();
+
+        for (var i = 0; i < text.Length; i += maxLength)
+        {
+            var length = Math.Min(maxLength, text.Length - i);
+            messages.Add(text.Substring(i, length));
+        }
+
+        return messages;
     }
 }

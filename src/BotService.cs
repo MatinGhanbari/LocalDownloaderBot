@@ -128,7 +128,15 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task SendTree(ChatId fromId, ReplyParameters? messageId)
     {
-        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: Utils.GetDirectoryTree(Path.Combine(BaseDirectory)));
+        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: "⌛️ Processing the download tree...");
+
+        const int maxMessageLength = 4096;
+        var tree = Utils.GetDirectoryTree(Path.Combine(BaseDirectory));
+
+        var messages = Utils.SplitMessage(tree, maxMessageLength);
+
+        foreach (var message in messages)
+            await _botClient!.SendMessage(fromId, message);
     }
 
     private async Task SendArchives(ChatId fromId, ReplyParameters? messageId)
