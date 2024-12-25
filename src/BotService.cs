@@ -10,7 +10,7 @@ namespace LocalDownloaderBot;
 
 internal class BotService(ILogger<BotService> logger) : BackgroundService
 {
-    private const string BotToken = "BOT-API-KEY";
+    private const string BotToken = "7686441305:AAHyJklErDpsypivcOUTN_GTjJ_72y5VWlU";
     private static readonly string BaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "DownloadedFiles");
     private static readonly string ArchivesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Archives");
     private TelegramBotClient? _botClient;
@@ -180,7 +180,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
     {
         var policy = Policy.Handle<Exception>()
                            .RetryAsync(20, async (e, i) =>
-                               await _botClient!.EditMessageText(fromId, messageId, text: $"❌ Received an Exception: {e.Message}., RetryNumber: {i}")
+                               await _botClient!.SendMessage(fromId, replyParameters: messageId, text: $"❌ Received an Exception: {e.Message}., RetryNumber: {i}")
                            );
 
         await policy.ExecuteAsync(async () => await DownloadAsync(file, fileType, datetime, documentFileName, fromId, messageId));
