@@ -43,13 +43,13 @@ internal static class Utils
         string[] subdirectories = Directory.GetDirectories(rootPath);
         foreach (string subdirectory in subdirectories)
         {
-            treeBuilder.Append(GetDirectoryTree(subdirectory, indent + "  ")); // Increase indentation for subdirectories
+            treeBuilder.Append(GetDirectoryTree(subdirectory, indent + "\t"));
         }
 
-        string[] files = Directory.GetFiles(rootPath);
-        foreach (string file in files)
+        var files = Directory.GetFiles(rootPath);
+        foreach (var file in files)
         {
-            treeBuilder.AppendLine($"{indent}  - {Path.GetFileName(file)}"); // Indent files
+            treeBuilder.AppendLine($"{indent}  - {Path.GetFileName(file)}");
         }
 
         return treeBuilder.ToString();
@@ -61,5 +61,41 @@ internal static class Utils
             Directory.CreateDirectory(baseDirectory);
         if (!Directory.Exists(archiveDirectory))
             Directory.CreateDirectory(archiveDirectory);
+    }
+
+    private static readonly char[] InvalidChars = new char[]
+    {
+        '\\', '/', ':', '*', '?', '"', '<', '>', '|',
+        (char)0, (char)1, (char)2, (char)3, (char)4, (char)5,
+        (char)6, (char)7, (char)8, (char)9, (char)10, (char)11,
+        (char)12, (char)13, (char)14, (char)15, (char)16, (char)17,
+        (char)18, (char)19, (char)20, (char)21, (char)22, (char)23,
+        (char)24, (char)25, (char)26, (char)27, (char)28, (char)29,
+        (char)30, (char)31
+    };
+
+    internal static string? ToWindowsSupportedFileName(this string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath)) return filePath;
+
+        var result = new StringBuilder();
+
+        foreach (var c in filePath)
+            result.Append(Array.Exists(InvalidChars, invalidChar => invalidChar == c) ? '_' : c);
+
+        return result.ToString();
+    }
+
+    internal static List<string> SplitMessage(string text, int maxLength)
+    {
+        var messages = new List<string>();
+
+        for (var i = 0; i < text.Length; i += maxLength)
+        {
+            var length = Math.Min(maxLength, text.Length - i);
+            messages.Add(text.Substring(i, length));
+        }
+
+        return messages;
     }
 }

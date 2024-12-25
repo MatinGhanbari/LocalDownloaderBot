@@ -1,6 +1,7 @@
-﻿using System.IO.Compression;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
+using System.IO.Compression;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -9,7 +10,7 @@ namespace LocalDownloaderBot;
 
 internal class BotService(ILogger<BotService> logger) : BackgroundService
 {
-    private const string BotToken = "BOT-API-KEY";
+    private const string BotToken = "7686441305:AAHyJklErDpsypivcOUTN_GTjJ_72y5VWlU";
     private static readonly string BaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "DownloadedFiles");
     private static readonly string ArchivesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Archives");
     private TelegramBotClient? _botClient;
@@ -127,7 +128,15 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task SendTree(ChatId fromId, ReplyParameters? messageId)
     {
-        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: Utils.GetDirectoryTree(Path.Combine(BaseDirectory)));
+        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: "⌛️ Processing the download tree...");
+
+        const int maxMessageLength = 4096;
+        var tree = Utils.GetDirectoryTree(Path.Combine(BaseDirectory));
+
+        var messages = Utils.SplitMessage(tree, maxMessageLength);
+
+        foreach (var message in messages)
+            await _botClient!.SendMessage(fromId, message);
     }
 
     private async Task SendArchives(ChatId fromId, ReplyParameters? messageId)
@@ -137,7 +146,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task SendHere(ChatId fromId, ReplyParameters? messageId)
     {
-        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: "😒 I'm here.");
+        await _botClient!.SendMessage(fromId, replyParameters: messageId, text: "I'm here.");
     }
 
     private async Task SendPing(ChatId fromId, ReplyParameters? messageId)
@@ -169,10 +178,20 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task DownloadFile(FileBase file, FileType fileType, string datetime, string? documentFileName, ChatId fromId, int messageId)
     {
+        var policy = Policy.Handle<Exception>()
+                           .RetryAsync(20, async (e, i) =>
+                               await _botClient!.SendMessage(fromId, replyParameters: messageId, text: $"❌ Received an Exception: {e.Message}., RetryNumber: {i}")
+                           );
+
+        await policy.ExecuteAsync(async () => await DownloadAsync(file, fileType, datetime, documentFileName, fromId, messageId));
+    }
+
+    private async Task DownloadAsync(FileBase file, FileType fileType, string datetime, string? documentFileName, ChatId fromId, int messageId)
+    {
         var fileName = (string?)file.GetType().GetProperty("FileName")?.GetValue(file)!;
 
         var fileInfo = await _botClient!.GetInfoAndDownloadFile(file.FileId, Stream.Null);
-        var filePath = Path.Combine(BaseDirectory, fileInfo.FilePath ?? $"{fileType:G}/{documentFileName ?? file.FileId}");
+        var filePath = Path.Combine(BaseDirectory, fileInfo.FilePath.ToWindowsSupportedFileName() ?? $"{fileType:G}/{documentFileName ?? file.FileId}");
 
         if (!string.IsNullOrEmpty(fileName?.Trim()))
             filePath = filePath.Replace(filePath.Split("/")[^1], fileName);
@@ -184,7 +203,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
         await using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
         {
-            await _botClient?.DownloadFile(fileInfo.FilePath, fileStream)!;
+            await _botClient?.DownloadFile(fileInfo.FilePath!, fileStream)!;
         }
 
         await _botClient!.EditMessageText(fromId, messageId: msg.MessageId, text: $"✅ File downloaded successfully: {fileName ?? fileInfo.FilePath}");
