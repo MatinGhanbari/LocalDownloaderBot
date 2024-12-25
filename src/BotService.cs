@@ -179,7 +179,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
     private async Task DownloadFile(FileBase file, FileType fileType, string datetime, string? documentFileName, ChatId fromId, int messageId)
     {
         var policy = Policy.Handle<Exception>()
-                           .RetryAsync(20, async (e, i) =>
+                           .RetryAsync(3, async (e, i) =>
                                await _botClient!.SendMessage(fromId, replyParameters: messageId, text: $"❌ Received an Exception: {e.Message}., RetryNumber: {i}")
                            );
 
@@ -188,7 +188,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task DownloadAsync(FileBase file, FileType fileType, string datetime, string? documentFileName, ChatId fromId, int messageId)
     {
-        var fileName = (string?)file.GetType().GetProperty("FileName")?.GetValue(file)!;
+        var fileName = ((string?)file.GetType().GetProperty("FileName")?.GetValue(file)!).ToWindowsSupportedFileName();
 
         var fileInfo = await _botClient!.GetInfoAndDownloadFile(file.FileId, Stream.Null);
         var filePath = Path.Combine(BaseDirectory, fileInfo.FilePath.ToWindowsSupportedFileName() ?? $"{fileType:G}/{documentFileName ?? file.FileId}");
@@ -196,7 +196,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
         if (!string.IsNullOrEmpty(fileName?.Trim()))
             filePath = filePath.Replace(filePath.Split("/")[^1], fileName);
 
-        var msg = await _botClient!.SendMessage(fromId, replyParameters: messageId, text: $"⏳ Downloading file of type {fileType:G} to {fileName ?? fileInfo.FilePath}...");
+        var msg = await _botClient!.SendMessage(fromId, replyParameters: messageId, text: $"⏳ Downloading file of type {fileType:G} to {fileName ?? fileInfo.FilePath.ToWindowsSupportedFileName()}...");
 
         if (!Directory.Exists(filePath.Replace(filePath.Split("/")[^1], "")))
             Directory.CreateDirectory(filePath.Replace(filePath.Split("/")[^1], "")!);
