@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
 using System.IO.Compression;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -169,6 +170,16 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
     private async Task DownloadFile(FileBase file, FileType fileType, string datetime, string? documentFileName, ChatId fromId, int messageId)
     {
+        var policy = Policy.Handle<Exception>()
+                           .RetryAsync(20, async (e, i) =>
+                               await _botClient!.EditMessageText(fromId, messageId, text: $"❌ Received an Exception: {e.Message}., RetryNumber: {i}")
+                           );
+
+        await policy.ExecuteAsync(async () => await DownloadAsync(file, fileType, datetime, documentFileName, fromId, messageId));
+    }
+
+    private async Task DownloadAsync(FileBase file, FileType fileType, string datetime, string? documentFileName, ChatId fromId, int messageId)
+    {
         var fileName = (string?)file.GetType().GetProperty("FileName")?.GetValue(file)!;
 
         var fileInfo = await _botClient!.GetInfoAndDownloadFile(file.FileId, Stream.Null);
@@ -184,7 +195,7 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
         await using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
         {
-            await _botClient?.DownloadFile(fileInfo.FilePath, fileStream)!;
+            await _botClient?.DownloadFile(fileInfo.FilePath!, fileStream)!;
         }
 
         await _botClient!.EditMessageText(fromId, messageId: msg.MessageId, text: $"✅ File downloaded successfully: {fileName ?? fileInfo.FilePath}");
