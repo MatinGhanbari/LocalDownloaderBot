@@ -41,7 +41,8 @@ internal class BotService(ILogger<BotService> logger) : BackgroundService
 
         try
         {
-            if (fromId != 116969885) return;
+            // Admin id checking
+            // if (fromId != 116969885) return;
 
             if (message.Text is not null && message.Text!.Trim().Equals("/tree", StringComparison.OrdinalIgnoreCase))
             {
